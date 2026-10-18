@@ -208,7 +208,8 @@ final class Sky {
 
 func moonDescription() -> String {
     let f = moonAge() / moonMonth
-    let names = ["삭", "초승달", "상현달", "차오르는 달", "보름달", "기우는 달", "하현달", "그믐달"]
+    let names = isKo ? ["삭", "초승달", "상현달", "차오르는 달", "보름달", "기우는 달", "하현달", "그믐달"]
+        : ["new moon", "waxing crescent", "first quarter", "waxing gibbous", "full moon", "waning gibbous", "last quarter", "waning crescent"]
     let lit = Int(((1 - cos(2 * .pi * f)) / 2 * 100).rounded())
-    return "\(names[Int((f * 8 + 0.5).rounded(.down)) % 8]) \(lit)%"
+    return "\(names[Int((f * 8 + 0.5).rounded(.down)) % 8]) \(lit)%" + L("", " lit")
 }

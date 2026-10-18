@@ -6,19 +6,35 @@ Claude 요금제 한도를 얼마나 썼는지 보여 주는 macOS 메뉴바 앱
 
 [English](README.md) · **한국어**
 
-![세션이 작업을 시작하고, 끝내고, 입력을 기다리는 모습](docs/states.gif)
+![세션이 작업을 시작하고, 끝내고, 입력을 기다리는 모습](docs/ko/states.gif)
 
 - **공식 숫자만 씁니다.** 퍼센트는 `claude -p /usage`에서 가져옵니다. 이 슬래시 명령은 기존 로그인으로 Anthropic 서버에 묻기만 하고, **모델을 호출하지 않아 토큰을 쓰지 않습니다**.
-- **의존성이 없습니다.** Swift/AppKit 네이티브 앱 하나입니다. Xcode Command Line Tools에 들어 있는 Swift 컴파일러로 빌드합니다. Electron, Node, 설치 프로그램 없음.
+- **의존성이 없습니다.** 작은 Swift/AppKit 네이티브 앱 하나입니다(Apple Silicon·Intel 겸용). Electron, Node, 설치 프로그램 없음.
+
+화면은 한국어와 영어를 지원하고, 시스템 언어를 따릅니다. 메뉴 → 언어에서 바꿀 수도 있습니다.
 - **Clawd.** Claude Code 시작 화면의 그 게를 같은 블록 글리프와 같은 애니메이션으로 그렸습니다. 아무것도 안 돌면 모래 속에서 자고, 세션이 일하면 뛰어다니고, 세션이 입력을 기다리면 `?`를 띄우고 깡충거립니다. 한도가 가까우면 땀을 흘리고, 다 쓰면 배를 드러내고 눕습니다.
 
 | 상세 보기: 한도, 세션, `/usage` 통계, 7일 그래프, 프로젝트 | 테마 |
 |---|---|
-| ![상세 보기](docs/details.png) | ![테마](docs/themes.png) |
+| ![상세 보기](docs/ko/details.png) | ![테마](docs/ko/themes.png) |
 
 ## 설치
 
-필요한 것: macOS 13 이상, Xcode Command Line Tools(`xcode-select --install`), Claude 계정으로 로그인한 [Claude Code](https://docs.claude.com/en/docs/claude-code).
+필요한 것: macOS 13 이상, Claude 계정으로 로그인한 [Claude Code](https://docs.claude.com/en/docs/claude-code).
+
+### 내려받기
+
+1. [Releases](https://github.com/fl03er/clawd-usage-mac/releases/latest)에서 `ClawdUsage-<버전>.zip`을 내려받아 압축을 풉니다.
+2. `ClawdUsage.app`을 `응용 프로그램`(또는 `~/Applications`)으로 옮깁니다.
+3. Apple 공증(유료 개발자 계정 필요)을 받지 않은 앱이라 처음 열 때 "Apple이 확인할 수 없습니다"라며 막힙니다. **시스템 설정 → 개인정보 보호 및 보안**에서 ClawdUsage 옆의 **그래도 열기**를 누르거나, 터미널에서 한 번 실행하세요.
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/ClawdUsage.app
+   ```
+
+### 소스에서 빌드
+
+Xcode Command Line Tools(`xcode-select --install`)가 필요합니다.
 
 ```bash
 git clone https://github.com/fl03er/clawd-usage-mac.git
@@ -64,9 +80,9 @@ Claude 계정(구독)을 고르고 브라우저에서 승인하면 1분 안에 �
 
 | | |
 |---|---|
-| ![클릭하면 Claude Code 애니메이션과 하트](docs/clicks.gif) | ![세션 한도를 다 쓰면 뒤집혀 눕고, 클릭하면 영혼이 빠져나옴](docs/soul.gif) |
+| ![클릭하면 Claude Code 애니메이션과 하트](docs/ko/clicks.gif) | ![세션 한도를 다 쓰면 뒤집혀 눕고, 클릭하면 영혼이 빠져나옴](docs/ko/soul.gif) |
 | 클릭하면 Claude Code 애니메이션 중 하나와 하트 | 세션 한도를 다 쓰면 뒤집혀 눕고, 클릭하면 영혼이 빠져나옴 |
-| ![5시간 창 리셋: 축하와 색종이](docs/reset.gif) | ![하늘은 실제 시간과 날씨를 따름](docs/weather.gif) |
+| ![5시간 창 리셋: 축하와 색종이](docs/ko/reset.gif) | ![하늘은 실제 시간과 날씨를 따름](docs/ko/weather.gif) |
 | 5시간 창이 리셋되면 축하와 색종이 | 하늘은 실제 시간대와 날씨를 따름 |
 
 | 상황 | Clawd |
@@ -96,7 +112,7 @@ Claude 계정(구독)을 고르고 브라우저에서 승인하면 1분 안에 �
 
 **Clawd 스킨**(메뉴 → Clawd 스킨): Clawd의 색과 함께 움직이는 픽셀 액세서리입니다. 모자는 머리가 화면 안에 있을 때만 보이고, 뒤집혀 누우면 벗겨집니다.
 
-![스킨](docs/skins.png)
+![스킨](docs/ko/skins.png)
 
 직접 만들기: 메뉴 → Clawd 스킨 → *내 스킨 폴더 열기*에 `.txt`를 넣고 앱을 다시 실행하세요. 형식은 원본과 같습니다.
 
@@ -139,13 +155,14 @@ Sources/
   Sprite.swift  Clawd 글리프, 자세, Claude Code 애니메이션 시퀀스
   Sky.swift     하늘, 해, 달 위상, 구름, 비, 눈, 안개, 번개
   Look.swift    테마와 스킨
+  Lang.swift    한국어 / 영어
   Data.swift    /usage 파싱, 세션, 기록, 프로젝트 집계, 네트워크
   Demo.swift    README 이미지용 데모 모드와 프레임 녹화
 skins/          기본 스킨
 tools/          record.sh + make_gif.py: 데모 데이터로 docs/ 이미지 생성
 ```
 
-`tools/record.sh`는 가짜 숫자로 앱을 데모 모드로 실행하고, 화면을 프레임 단위로 녹화해 위 GIF들을 만듭니다(Pillow가 설치된 Python 필요).
+`tools/record.sh`는 가짜 숫자로 앱을 데모 모드로 실행하고, 화면을 프레임 단위로 녹화해 위 GIF들을 영어(`docs/`)와 한국어(`docs/ko/`)로 만듭니다(Pillow가 설치된 Python 필요). `./build.sh release`는 겸용 빌드 zip을 `dist/`에 만듭니다.
 
 ## 만든 사람들
 

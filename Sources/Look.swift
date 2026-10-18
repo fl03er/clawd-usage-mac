@@ -3,29 +3,30 @@
 import AppKit
 
 struct Theme {
-    var id: String, name: String
+    var id: String, nameKo: String, nameEn: String
+    var name: String { L(nameKo, nameEn) }
     var bg: NSColor, card: NSColor, text: NSColor, text2: NSColor, muted: NSColor, dim: NSColor, faint: NSColor, off: NSColor, accent: NSColor
     var pattern = false
 }
 
-func makeTheme(_ id: String, _ name: String, _ c: [String: String], pattern: Bool = false) -> Theme {
+func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false) -> Theme {
     let base = ["bg": "#1A1A1E", "card": "#26262C", "text": "#E4E4E7", "text2": "#D4D4D8", "muted": "#8B8B94",
                 "dim": "#6B7280", "faint": "#52525B", "off": "#3F3F46", "accent": "#60A5FA"]
     func k(_ key: String) -> NSColor { hexColor(c[key] ?? base[key]!) }
-    return Theme(id: id, name: name, bg: k("bg"), card: k("card"), text: k("text"), text2: k("text2"), muted: k("muted"),
+    return Theme(id: id, nameKo: nameKo, nameEn: nameEn, bg: k("bg"), card: k("card"), text: k("text"), text2: k("text2"), muted: k("muted"),
                  dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern)
 }
 
 let themes: [Theme] = [
-    makeTheme("classic", "클래식", [:]),
-    makeTheme("oled", "OLED 블랙", ["bg": "#000000", "card": "#141414"]),
-    makeTheme("midnight", "미드나이트", ["bg": "#0F172A", "card": "#1E293B", "text": "#E2E8F0", "text2": "#CBD5E1", "muted": "#8494AB",
+    makeTheme("classic", "클래식", "Classic", [:]),
+    makeTheme("oled", "OLED 블랙", "OLED black", ["bg": "#000000", "card": "#141414"]),
+    makeTheme("midnight", "미드나이트", "Midnight", ["bg": "#0F172A", "card": "#1E293B", "text": "#E2E8F0", "text2": "#CBD5E1", "muted": "#8494AB",
                                        "dim": "#64748B", "faint": "#475569", "off": "#334155", "accent": "#38BDF8"]),
-    makeTheme("mocha", "모카", ["bg": "#1E1E2E", "card": "#313244", "text": "#CDD6F4", "text2": "#BAC2DE", "muted": "#9399B2",
+    makeTheme("mocha", "모카", "Mocha", ["bg": "#1E1E2E", "card": "#313244", "text": "#CDD6F4", "text2": "#BAC2DE", "muted": "#9399B2",
                                "dim": "#7F849C", "faint": "#585B70", "off": "#45475A", "accent": "#89B4FA"]),
-    makeTheme("forest", "포레스트", ["bg": "#111814", "card": "#1C2A21", "text": "#E1EAE3", "text2": "#CFDBD2", "muted": "#86998B",
+    makeTheme("forest", "포레스트", "Forest", ["bg": "#111814", "card": "#1C2A21", "text": "#E1EAE3", "text2": "#CFDBD2", "muted": "#86998B",
                                     "dim": "#66786B", "faint": "#4B5B50", "off": "#35433A", "accent": "#5EEAD4"]),
-    makeTheme("halloween", "할로윈", ["bg": "#1C1326", "card": "#2A1D38", "text": "#F5E6DA", "text2": "#E7D3C4", "muted": "#A08B9C",
+    makeTheme("halloween", "할로윈", "Halloween", ["bg": "#1C1326", "card": "#2A1D38", "text": "#F5E6DA", "text2": "#E7D3C4", "muted": "#A08B9C",
                                      "dim": "#7E6A80", "faint": "#5B4A63", "off": "#3F3048", "accent": "#F97316"], pattern: true),
 ]
 
@@ -69,13 +70,15 @@ func drawPattern(in rect: CGRect) {
 // MARK: - Skins
 
 struct Skin {
-    var id: String, name: String
+    var id: String, fileName: String
+    var name: String { (isKo ? skinNamesKo[id] : skinNamesEn[id]) ?? fileName }
     var body = clawdColor, eyes = hexColor("#141416")
     var layers: [(NSColor, [(Int, Int)])] = []
 }
 
-let skinNames = ["classic": "기본", "bow": "리본", "crown": "왕관", "ears": "고양이 귀", "frost": "서리", "nerd": "안경",
-                 "party": "파티", "santa": "산타 모자", "shades": "선글라스", "tired": "피곤", "tophat": "중절모", "witch": "마녀 모자"]
+let skinNamesKo = ["classic": "기본", "bow": "리본", "crown": "왕관", "ears": "고양이 귀", "frost": "서리", "nerd": "안경",
+                   "party": "파티", "santa": "산타 모자", "shades": "선글라스", "tired": "피곤", "tophat": "중절모", "witch": "마녀 모자"]
+let skinNamesEn = ["classic": "Classic", "ears": "Cat ears"]
 
 // A skin file: front matter (name, body, eyes, top, one colour per letter) and 18-pixel-wide art.
 // Without "top" the art sits right on his head; rows above it are negative.
@@ -83,14 +86,14 @@ func readSkin(_ url: URL) -> Skin? {
     guard let raw = try? String(contentsOf: url, encoding: .utf8),
           let m = firstMatch(raw, "^\\s*---\\s*\\r?\\n([\\s\\S]*?)\\r?\\n---\\s*\\r?\\n?([\\s\\S]*)$") else { return nil }
     let id = url.deletingPathExtension().lastPathComponent.lowercased()
-    var s = Skin(id: id, name: skinNames[id] ?? id)
+    var s = Skin(id: id, fileName: id.capitalized)
     var colors: [Character: NSColor] = [:]
     var top: Int? = nil
     for line in (m[1] ?? "").components(separatedBy: .newlines) {
         guard let kv = firstMatch(line, "^\\s*(\\w+)\\s*:\\s*(.*?)\\s*$"), let k = kv[1], let v = kv[2] else { continue }
         let isColor = v.range(of: "^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$", options: .regularExpression) != nil
         switch k {
-        case "name": if skinNames[id] == nil { s.name = v }
+        case "name": s.fileName = v
         case "body": if isColor { s.body = hexColor(v) }
         case "eyes": if isColor { s.eyes = hexColor(v) }
         case "top": top = Int(v)
@@ -111,7 +114,7 @@ func readSkin(_ url: URL) -> Skin? {
 }
 
 func loadSkins() -> [Skin] {
-    var all = [Skin(id: "classic", name: skinNames["classic"]!)]
+    var all = [Skin(id: "classic", fileName: "Classic")]
     let dirs = [Bundle.main.resourceURL?.appendingPathComponent("skins"),
                 appSupport.appendingPathComponent("skins")].compactMap { $0 }
     for dir in dirs {

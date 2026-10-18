@@ -16,7 +16,7 @@ final class ClawdView: NSView {
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
 
     var theme = themes[0]
-    var skin = Skin(id: "classic", name: "기본")
+    var skin = Skin(id: "classic", fileName: "Classic")
     let sky = Sky()
 
     // Layout.
@@ -486,10 +486,10 @@ final class ClawdView: NSView {
         var y = hero.maxY + 6
         if let s = u?.session {
             bar(y, s.pct, levelColor(s.pct), h: 6); y += 12
-            let r = s.reset.map { "\(leftText($0)) 후 리셋 · \(clock($0))" } ?? "아직 시작 안 됨"
+            let r = s.reset.map { L("\(leftText($0)) 후 리셋 · \(clock($0))", "resets in \(leftText($0)) · \(clock($0))") } ?? L("아직 시작 안 됨", "not started yet")
             text(r, pad, y, font(13), theme.text); y += 26
         } else {
-            let msg = app.errorText ?? "사용량 불러오는 중…"
+            let msg = app.errorText ?? L("사용량 불러오는 중…", "Loading usage…")
             y += para(msg, pad, y + 4, w - 2 * pad, font(11), theme.muted) + 14
         }
 
@@ -501,13 +501,14 @@ final class ClawdView: NSView {
             bar(y, l.pct, color, h: 4)
             y += 16
         }
-        if let wk = u?.week { limitRow("주간", wk, theme.accent) }
-        if let fb = u?.fable { limitRow("FABLE · 주간", fb, fableColor) }
+        if let wk = u?.week { limitRow(L("주간", "WEEK"), wk, theme.accent) }
+        if let fb = u?.fable { limitRow(L("FABLE · 주간", "FABLE · WEEK"), fb, fableColor) }
 
         // Sessions.
         let ss = app.sessions
-        caps("세션", y)
-        text("\(ss.count)개 실행  ·  \(ss.filter(\.busy).count) 작업" + (ss.contains(where: \.waiting) ? "  ·  \(ss.filter(\.waiting).count) 대기" : ""),
+        caps(L("세션", "SESSIONS"), y)
+        text(L("\(ss.count)개 실행  ·  \(ss.filter(\.busy).count) 작업", "\(ss.count) sessions  ·  \(ss.filter(\.busy).count) working")
+             + (ss.contains(where: \.waiting) ? L("  ·  \(ss.filter(\.waiting).count) 대기", "  ·  \(ss.filter(\.waiting).count) waiting") : ""),
              w - pad, y - 1, font(11.5), theme.text2, right: true)
         y += 24
 
@@ -515,9 +516,9 @@ final class ClawdView: NSView {
         if let st = app.status {
             let (dot, msg): (NSColor, String) = {
                 switch st.indicator {
-                case "none": return (hexColor("#4ADE80"), "모든 Claude 시스템 정상")
-                case "minor": return (hexColor("#FBBF24"), st.incidents.first ?? "일부 장애: " + st.broken.joined(separator: ", "))
-                default: return (hexColor("#F87171"), st.incidents.first ?? "장애: " + st.broken.joined(separator: ", "))
+                case "none": return (hexColor("#4ADE80"), L("모든 Claude 시스템 정상", "All Claude systems operational"))
+                case "minor": return (hexColor("#FBBF24"), st.incidents.first ?? L("일부 장애: ", "Degraded: ") + st.broken.joined(separator: ", "))
+                default: return (hexColor("#F87171"), st.incidents.first ?? L("장애: ", "Outage: ") + st.broken.joined(separator: ", "))
                 }
             }()
             dot.setFill()
@@ -543,17 +544,17 @@ final class ClawdView: NSView {
         func period(_ title: String, _ p: Period?) {
             guard let p else { return }
             caps(title, y); y += 17
-            text("\(p.requests) 요청  ·  \(p.sessions) 세션", pad, y, font(13), theme.text); y += 19
+            text(L("\(p.requests) 요청  ·  \(p.sessions) 세션", "\(p.requests) requests  ·  \(p.sessions) sessions"), pad, y, font(13), theme.text); y += 19
             if !p.lines.isEmpty {
                 y += para(p.lines.map(formatStat).joined(separator: "  ·  "), pad, y, w - 2 * pad, font(11), theme.muted)
             }
             y += 12
         }
-        period("최근 24시간 · 이 컴퓨터", app.usage?.day)
-        period("최근 7일", app.usage?.week7)
+        period(L("최근 24시간 · 이 컴퓨터", "LAST 24 HOURS · THIS COMPUTER"), app.usage?.day)
+        period(L("최근 7일", "LAST 7 DAYS"), app.usage?.week7)
 
         // Limits over 7 days: the session line with an area, the week line on top.
-        caps("한도 · 7일", y); y += 18
+        caps(L("한도 · 7일", "LIMITS · 7 DAYS"), y); y += 18
         let cw = w - 2 * pad, ch = 48.0
         chartRect = CGRect(x: pad, y: y, width: cw, height: ch)
         drawChart(chartRect)
@@ -578,7 +579,7 @@ final class ClawdView: NSView {
         if hoverX == nil && !app.history.samples.isEmpty {
             // Legend in the colours of the two lines.
             var x = pad
-            for (label, c) in [("세션 (5시간)", hexColor("#4ADE80")), ("주간", theme.accent)] {
+            for (label, c) in [(L("세션 (5시간)", "session (5h)"), hexColor("#4ADE80")), (L("주간", "week"), theme.accent)] {
                 x += text("━ ", x, y, font(11, .bold), c).width
                 x += text(label, x, y, font(11), theme.muted).width + 14
             }
@@ -588,7 +589,7 @@ final class ClawdView: NSView {
         }
 
         // Projects over 7 days, by tokens weighted with model prices.
-        caps("프로젝트 · 7일", y); y += 18
+        caps(L("프로젝트 · 7일", "PROJECTS · 7 DAYS"), y); y += 18
         if let p = app.projects, p.total.values.reduce(0, +) > 0 {
             let sum = p.total.values.reduce(0, +)
             for (name, v) in p.total.sorted(by: { $0.value > $1.value }).prefix(4) {
@@ -605,7 +606,7 @@ final class ClawdView: NSView {
                 y += 19
             }
         } else {
-            text(app.projectScanner.running ? "집계 중…" : "최근 7일 기록 없음", pad, y, font(11), theme.dim); y += 18
+            text(app.projectScanner.running ? L("집계 중…", "counting…") : L("최근 7일 기록 없음", "nothing in the last 7 days"), pad, y, font(11), theme.dim); y += 18
         }
         y += 8
         separator(y); y += 10
@@ -613,7 +614,7 @@ final class ClawdView: NSView {
         // Footer: Claude Code version, update, last refresh, weather.
         var ver = "Claude Code " + (app.verLocal ?? "?")
         if let l = app.verLatest, let v = app.verLocal {
-            ver += l.compare(v, options: .numeric) == .orderedDescending ? "  ·  \(l) 업데이트 있음" : "  ·  최신"
+            ver += l.compare(v, options: .numeric) == .orderedDescending ? L("  ·  \(l) 업데이트 있음", "  ·  \(l) is out") : L("  ·  최신", "  ·  latest")
         }
         text(ver, pad, y, font(11), theme.muted)
         y += 16
@@ -626,7 +627,7 @@ final class ClawdView: NSView {
             info.append(moonDescription())
         }
         text(info.joined(separator: "  ·  "), pad, y, font(10.5), theme.faint)
-        if let at = app.usageAt { text(clock(at, "HH:mm:ss") + (app.stale ? " (갱신 실패)" : ""), w - pad, y, font(10.5, mono: true), theme.faint, right: true) }
+        if let at = app.usageAt { text(clock(at, "HH:mm:ss") + (app.stale ? L(" (갱신 실패)", " (stale)") : ""), w - pad, y, font(10.5, mono: true), theme.faint, right: true) }
         y += 14
         return y
     }
@@ -681,15 +682,15 @@ final class ClawdView: NSView {
     // Under the chart: the legend, or the point under the mouse with the busiest project of that hour.
     func chartCaption() -> String {
         guard let app else { return "" }
-        if app.history.samples.isEmpty { return "기록은 지금부터 쌓입니다" }
-        guard let hx = hoverX else { return "━ 세션 (5시간)    ━ 주간" }
+        if app.history.samples.isEmpty { return L("기록은 지금부터 쌓입니다", "the history starts now") }
+        guard let hx = hoverX else { return L("━ 세션 (5시간)    ━ 주간", "━ session (5h)    ━ week") }
         let t1 = Date().timeIntervalSince1970 / 60, t0 = t1 - 7 * 1440
         let t = Int(t0 + (t1 - t0) * max(0, min(chartRect.width, hx)) / chartRect.width)
         var parts = [clock(Date(timeIntervalSince1970: Double(t) * 60), "E HH:mm")]
         if let s = app.history.at(t) {
-            if s[1] >= 0 { parts.append("세션 \(s[1])%") }
-            if s[2] >= 0 { parts.append("주간 \(s[2])%") }
-        } else { parts.append("기록 없음") }
+            if s[1] >= 0 { parts.append(L("세션 \(s[1])%", "session \(s[1])%")) }
+            if s[2] >= 0 { parts.append(L("주간 \(s[2])%", "week \(s[2])%")) }
+        } else { parts.append(L("기록 없음", "no data")) }
         if let top = app.projects?.hours[t / 60]?.max(by: { $0.value < $1.value }) { parts.append(top.key) }
         return parts.joined(separator: "  ·  ")
     }

@@ -56,15 +56,15 @@ func parseUsage(_ text: String) -> Usage? {
 }
 
 // Stats lines are shortened; unknown ones are kept as is, so new metrics are not lost.
-let statRules: [(String, String)] = [
-    ("^(\\d+)% of your usage was at >(\\S+) context", "%1%는 >%2 컨텍스트"),
-    ("^(\\d+)% of your usage went to always-on context over (\\S+)", "%1% 상시 컨텍스트 >%2"),
-    ("^(\\d+)% of your usage came from subagent-heavy", "%1% 서브에이전트 위주 세션"),
-    ("^(\\d+)% of your usage came from sessions active for (\\d+)\\+? hours", "%1% %2시간+ 세션"),
+var statRules: [(String, String)] { [
+    ("^(\\d+)% of your usage was at >(\\S+) context", L("%1%는 >%2 컨텍스트", "%1% at >%2 context")),
+    ("^(\\d+)% of your usage went to always-on context over (\\S+)", L("%1% 상시 컨텍스트 >%2", "%1% always-on context >%2")),
+    ("^(\\d+)% of your usage came from subagent-heavy", L("%1% 서브에이전트 위주 세션", "%1% subagent-heavy sessions")),
+    ("^(\\d+)% of your usage came from sessions active for (\\d+)\\+? hours", L("%1% %2시간+ 세션", "%1% sessions %2h+")),
     ("^Top MCP servers:\\s*(.+)$", "MCP: %1"),
-    ("^Top skills:\\s*(.+)$", "스킬: %1"),
-    ("^Top subagents:\\s*(.+)$", "서브에이전트: %1"),
-]
+    ("^Top skills:\\s*(.+)$", L("스킬: %1", "skills: %1")),
+    ("^Top subagents:\\s*(.+)$", L("서브에이전트: %1", "subagents: %1")),
+] }
 func formatStat(_ line: String) -> String {
     for (re, out) in statRules {
         if let m = firstMatch(line, re) {
@@ -322,13 +322,13 @@ struct WeatherKind { var name: String; var cover: Double; var fog = false; var s
 // WMO weather codes. rain/snow - drops or flakes at medium intensity; three codes - light, moderate, heavy.
 func weatherKind(_ code: Int) -> WeatherKind {
     let table: [([Int], String, Double, Bool, Bool, Int, Int)] = [
-        ([0], "맑음", 0, false, false, 0, 0), ([1], "대체로 맑음", 0.2, false, false, 0, 0),
-        ([2], "구름 조금", 0.5, false, false, 0, 0), ([3], "흐림", 0.85, false, false, 0, 0),
-        ([45, 48], "안개", 0.7, true, false, 0, 0), ([51, 53, 55], "이슬비", 0.8, false, false, 6, 0),
-        ([56, 57], "어는 이슬비", 0.8, false, false, 6, 0), ([61, 63, 65], "비", 0.9, false, false, 12, 0),
-        ([66, 67], "어는 비", 0.9, false, false, 12, 0), ([71, 73, 75], "눈", 0.85, false, false, 0, 10),
-        ([77], "싸락눈", 0.85, false, false, 0, 8), ([80, 81, 82], "소나기", 0.85, false, false, 16, 0),
-        ([85, 86], "눈 소나기", 0.9, false, false, 0, 14), ([95, 96, 99], "뇌우", 1.0, false, true, 16, 0),
+        ([0], L("맑음", "clear"), 0, false, false, 0, 0), ([1], L("대체로 맑음", "mostly clear"), 0.2, false, false, 0, 0),
+        ([2], L("구름 조금", "partly cloudy"), 0.5, false, false, 0, 0), ([3], L("흐림", "overcast"), 0.85, false, false, 0, 0),
+        ([45, 48], L("안개", "fog"), 0.7, true, false, 0, 0), ([51, 53, 55], L("이슬비", "drizzle"), 0.8, false, false, 6, 0),
+        ([56, 57], L("어는 이슬비", "freezing drizzle"), 0.8, false, false, 6, 0), ([61, 63, 65], L("비", "rain"), 0.9, false, false, 12, 0),
+        ([66, 67], L("어는 비", "freezing rain"), 0.9, false, false, 12, 0), ([71, 73, 75], L("눈", "snow"), 0.85, false, false, 0, 10),
+        ([77], L("싸락눈", "snow grains"), 0.85, false, false, 0, 8), ([80, 81, 82], L("소나기", "showers"), 0.85, false, false, 16, 0),
+        ([85, 86], L("눈 소나기", "snow showers"), 0.9, false, false, 0, 14), ([95, 96, 99], L("뇌우", "thunderstorm"), 1.0, false, true, 16, 0),
     ]
     for (codes, name, cover, fog, storm, rain, snow) in table {
         guard let i = codes.firstIndex(of: code) else { continue }
@@ -336,7 +336,7 @@ func weatherKind(_ code: Int) -> WeatherKind {
         return WeatherKind(name: name, cover: cover, fog: fog, storm: storm,
                            rain: Int((Double(rain) * mul).rounded()), snow: Int((Double(snow) * mul).rounded()))
     }
-    return WeatherKind(name: "날씨 코드 \(code)", cover: 0.5)
+    return WeatherKind(name: L("날씨 코드 \(code)", "weather code \(code)"), cover: 0.5)
 }
 
 // Sunrise and sunset from coordinates (NOAA formulas), local time, minutes from midnight.
@@ -384,14 +384,14 @@ func levelColor(_ pct: Int) -> NSColor {
 func leftText(_ d: Date?) -> String {
     guard let d else { return "" }
     let m = max(0, Int(d.timeIntervalSinceNow / 60))
-    if m >= 1440 { return "\(m / 1440)일 \(m % 1440 / 60)시간" }
-    if m >= 60 { return "\(m / 60)시간 \(m % 60)분" }
-    return "\(m)분"
+    if m >= 1440 { return L("\(m / 1440)일 \(m % 1440 / 60)시간", "\(m / 1440)d \(m % 1440 / 60)h") }
+    if m >= 60 { return L("\(m / 60)시간 \(m % 60)분", "\(m / 60)h \(m % 60)m") }
+    return L("\(m)분", "\(m)m")
 }
 
 func clock(_ d: Date, _ fmt: String = "HH:mm") -> String {
     let df = DateFormatter()
-    df.locale = Locale(identifier: "ko_KR")
+    df.locale = Locale(identifier: isKo ? "ko_KR" : "en_US")
     df.dateFormat = fmt
     return df.string(from: d)
 }

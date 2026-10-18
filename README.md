@@ -9,10 +9,10 @@ A macOS port of [clawd-usage-winwidget](https://github.com/Enhed/clawd-usage-win
 ![A session starts working, finishes, then waits for you](docs/states.gif)
 
 - **Official numbers only.** Percentages come from `claude -p /usage`. The slash command runs headless, talks to Anthropic with your existing login and **does not call the model or spend tokens**.
-- **No dependencies.** One native Swift/AppKit app, built with the Swift compiler that ships with the Xcode Command Line Tools. No Electron, no Node, no installer.
+- **No dependencies.** One small native Swift/AppKit app (universal: Apple Silicon and Intel). No Electron, no Node, no installer.
 - **Clawd.** The crab from Claude Code's welcome screen, built from the same block glyphs and with the same animations. He sleeps when nothing runs, runs around while a session works, hops with a `?` when a session is waiting for you, sweats near the limit and lies belly-up when it's used up.
 
-> The interface is in Korean for now. The numbers and Clawd speak every language.
+English and Korean; it follows your system language, or pick one in the menu → Language.
 
 | Details: limits, sessions, `/usage` stats, the 7-day chart and top projects | Themes |
 |---|---|
@@ -20,7 +20,21 @@ A macOS port of [clawd-usage-winwidget](https://github.com/Enhed/clawd-usage-win
 
 ## Install
 
-Requirements: macOS 13 or later, the Xcode Command Line Tools (`xcode-select --install`) and [Claude Code](https://docs.claude.com/en/docs/claude-code) installed and logged in with your Claude account.
+Requirements: macOS 13 or later and [Claude Code](https://docs.claude.com/en/docs/claude-code) installed and logged in with your Claude account.
+
+### Download
+
+1. Download `ClawdUsage-<version>.zip` from [Releases](https://github.com/fl03er/clawd-usage-mac/releases/latest) and unzip it.
+2. Move `ClawdUsage.app` to `Applications` (or `~/Applications`).
+3. The app isn't notarized by Apple (that needs a paid developer account), so the first launch is blocked with "Apple could not verify…". Either open **System Settings → Privacy & Security** and click **Open Anyway** next to ClawdUsage, or run once:
+
+   ```bash
+   xattr -dr com.apple.quarantine /Applications/ClawdUsage.app
+   ```
+
+### Build from source
+
+Needs the Xcode Command Line Tools (`xcode-select --install`).
 
 ```bash
 git clone https://github.com/fl03er/clawd-usage-mac.git
@@ -39,7 +53,7 @@ claude auth login
 
 Pick your Claude account (subscription), approve in the browser, and the numbers show up within a minute.
 
-**Start at login:** right-click the crab in the menu bar → *로그인 시 자동 실행* (start at login). macOS may ask you to allow it in System Settings → General → Login Items.
+**Start at login:** right-click the crab in the menu bar → *Start at login*. macOS may ask you to allow it in System Settings → General → Login Items.
 
 ## What it shows
 
@@ -90,17 +104,17 @@ The three hearts in the header are his health, tamagotchi-style: how much of the
 
 Behind the big number there's a faint sky. It follows real sunrise and sunset for your location: the sun moves along an arc, at night there's the moon in its actual phase and twinkling stars. Weather adds clouds drifting with the wind, drizzle, rain, showers, snow (that settles under Clawd's feet), fog and thunderstorms.
 
-Weather comes from [Open-Meteo](https://open-meteo.com) (no key); the location is looked up once per run by IP via [ipwho.is](https://ipwho.is). Turn it off with *하늘과 날씨* (sky and weather) in the menu and no request is made.
+Weather comes from [Open-Meteo](https://open-meteo.com) (no key); the location is looked up once per run by IP via [ipwho.is](https://ipwho.is). Turn off *Sky and weather* in the menu and no request is made.
 
 ## Themes and skins
 
-**Themes** (menu → 테마): Classic, Midnight, Mocha, OLED black, Forest and Halloween, with a wallpaper of tiny pumpkins, bats and ghosts. *By season* is Halloween in September–November and Classic the rest of the year.
+**Themes** (menu → Theme): Classic, Midnight, Mocha, OLED black, Forest and Halloween, with a wallpaper of tiny pumpkins, bats and ghosts. *By season* is Halloween in September–November and Classic the rest of the year.
 
-**Clawd's skins** (menu → Clawd 스킨): his colours plus pixel accessories that move with him. A hat shows while his head is in the frame, and lying on his back he loses it.
+**Clawd's skins** (menu → Clawd's skin): his colours plus pixel accessories that move with him. A hat shows while his head is in the frame, and lying on his back he loses it.
 
 ![Skins](docs/skins.png)
 
-Your own skin: menu → Clawd 스킨 → *내 스킨 폴더 열기* (open my skins folder), put a `.txt` there and restart. The format is the same as the original's:
+Your own skin: menu → Clawd's skin → *Open my skins folder*, put a `.txt` there and restart. The format is the same as the original's:
 
 ```
 ---
@@ -141,13 +155,14 @@ Sources/
   Sprite.swift  Clawd's glyphs, poses and the Claude Code animation sequences
   Sky.swift     sky, sun, moon phase, clouds, rain, snow, fog, lightning
   Look.swift    themes and skins
+  Lang.swift    Korean / English
   Data.swift    /usage parsing, sessions, history, project scan, network
   Demo.swift    demo mode and frame recorder for the README images
 skins/          built-in skins
 tools/          record.sh + make_gif.py: render docs/ from demo data
 ```
 
-`tools/record.sh` runs the app in demo mode with fake numbers, records frames straight from the view and turns them into the GIFs above (needs Python with Pillow).
+`tools/record.sh` runs the app in demo mode with fake numbers, records frames straight from the view and turns them into the GIFs above, in English (`docs/`) and Korean (`docs/ko/`). It needs Python with Pillow. `./build.sh release` makes the universal zip in `dist/`.
 
 ## Credits
 

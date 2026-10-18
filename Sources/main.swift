@@ -59,6 +59,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         statusItem.button?.action = #selector(statusClicked)
         statusItem.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
 
+        uiLang = env["CLAWD_LANG"] ?? defaults.string(forKey: "lang") ?? "auto"
         skins = loadSkins()
         view = ClawdView(frame: NSRect(x: 0, y: 0, width: panelW, height: 300))
         view.app = self
@@ -90,7 +91,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             let p = findClaude()
             DispatchQueue.main.async {
                 self.claudePath = p
-                if p == nil { self.errorText = "claude CLI를 찾지 못했습니다. Claude Code를 설치하세요."; self.view.needsDisplay = true }
+                if p == nil { self.errorText = L("claude CLI를 찾지 못했습니다. Claude Code를 설치하세요.", "Couldn't find the claude CLI. Install Claude Code."); self.view.needsDisplay = true }
                 self.runProbe()
                 self.refreshVersion()
             }
@@ -198,7 +199,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             // Keep the last numbers and mark them stale.
             stale = usage != nil
             if usage == nil {
-                errorText = "사용량 한도를 받지 못했습니다. 터미널에서 `claude auth login`으로 Claude 구독 계정에 로그인하세요."
+                errorText = L("사용량 한도를 받지 못했습니다. 터미널에서 `claude auth login`으로 Claude 구독 계정에 로그인하세요.",
+                               "No limits from /usage. Log in with your Claude subscription: run `claude auth login` in a terminal.")
             }
         }
         view.setMood(sessions: sessions, usage: usage)
@@ -212,21 +214,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
     // apart by its reset time. Also: the 5-hour window reset after a busy stretch.
     func checkAlerts(old: Usage?, new u: Usage) {
         guard alertsOn, ProcessInfo.processInfo.environment["CLAWD_FAKE_USAGE"] == nil else { return }
-        for (key, label, lim) in [("session", "현재 세션", u.session), ("week", "주간 한도", u.week)] {
+        for (key, label, lim) in [("session", L("현재 세션", "Session"), u.session), ("week", L("주간 한도", "Weekly limit"), u.week)] {
             guard let l = lim, let reset = l.reset else { continue }
             let window = Int(reset.timeIntervalSince1970 / 60)
             for th in [100, 95, 80] where l.pct >= th {
                 if defaults.integer(forKey: "alert.\(key).\(th)") == window { break }
                 // The highest threshold crossed speaks; the lower ones count as told.
                 for lower in [100, 95, 80] where lower <= th { defaults.set(window, forKey: "alert.\(key).\(lower)") }
-                let left = key == "session" ? "\(leftText(reset)) 후 리셋 (\(clock(reset)))" : "\(clock(reset, "E HH:mm")) 리셋"
-                notify(th >= 100 ? "\(label) 한도를 다 썼어요" : "\(label) \(l.pct)% 사용", left)
+                let left = key == "session" ? L("\(leftText(reset)) 후 리셋 (\(clock(reset)))", "resets in \(leftText(reset)) (\(clock(reset)))")
+                    : L("\(clock(reset, "E HH:mm")) 리셋", "resets \(clock(reset, "E HH:mm"))")
+                notify(th >= 100 ? L("\(label) 한도를 다 썼어요", "\(label) used up") : L("\(label) \(l.pct)% 사용", "\(label) at \(l.pct)%"), left)
                 break
             }
         }
         if let o = old?.session, let n = u.session, let or = o.reset, let nr = n.reset,
            nr > or.addingTimeInterval(60), n.pct < o.pct, o.pct >= 50 {
-            notify("5시간 세션이 리셋됐어요", "현재 세션 \(n.pct)% · 다음 리셋 \(clock(nr))")
+            notify(L("5시간 세션이 리셋됐어요", "The 5-hour window reset"), L("현재 세션 \(n.pct)% · 다음 리셋 \(clock(nr))", "session \(n.pct)% · next reset \(clock(nr))"))
         }
     }
 
@@ -345,7 +348,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         statusItem.button?.image = img
     }
 
-    func skin() -> Skin { skins.first { $0.id == skinId } ?? skins.first ?? Skin(id: "classic", name: "기본") }
+    func skin() -> Skin { skins.first { $0.id == skinId } ?? skins.first ?? Skin(id: "classic", fileName: "Classic") }
 
     func applyLook() {
         view.theme = currentTheme(themeId)
@@ -360,14 +363,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         let m = NSMenu()
         func info(_ s: String) { let it = NSMenuItem(title: s, action: nil, keyEquivalent: ""); it.isEnabled = false; m.addItem(it) }
         if let u = usage {
-            if let s = u.session { info("현재 세션 \(s.pct)%" + (s.reset.map { " · \(clock($0)) 리셋" } ?? "")) }
-            if let w = u.week { info("주간 한도 \(w.pct)%" + (w.reset.map { " · \(clock($0, "E HH:mm")) 리셋" } ?? "")) }
-            if let fb = u.fable { info("주간 (Fable) \(fb.pct)%") }
+            if let s = u.session { info(L("현재 세션", "Session") + " \(s.pct)%" + (s.reset.map { L(" · \(clock($0)) 리셋", " · resets \(clock($0))") } ?? "")) }
+            if let w = u.week { info(L("주간 한도", "Week") + " \(w.pct)%" + (w.reset.map { L(" · \(clock($0, "E HH:mm")) 리셋", " · resets \(clock($0, "E HH:mm"))") } ?? "")) }
+            if let fb = u.fable { info(L("주간 (Fable)", "Fable · week") + " \(fb.pct)%") }
         } else {
-            info(errorText == nil ? "불러오는 중…" : "사용량 없음: 터미널에서 claude auth login 필요")
+            info(errorText == nil ? L("불러오는 중…", "Loading…") : L("사용량 없음: 터미널에서 claude auth login 필요", "No usage: run claude auth login in a terminal"))
         }
         m.addItem(.separator())
-        if sessions.isEmpty { info("실행 중인 Claude Code 세션 없음") }
+        if sessions.isEmpty { info(L("실행 중인 Claude Code 세션 없음", "No Claude Code sessions running")) }
         for s in sessions { info("\(s.waiting ? "?" : s.busy ? "▶" : "○")  \(s.name)") }
         m.addItem(.separator())
         func item(_ title: String, _ sel: Selector, _ on: Bool? = nil, _ rep: Any? = nil, in menu: NSMenu? = nil) {
@@ -377,25 +380,30 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             if let on { it.state = on ? .on : .off }
             (menu ?? m).addItem(it)
         }
-        item("지금 새로고침", #selector(refreshNow))
-        item("자세히 보기", #selector(toggleDetails), detailsOn)
+        item(L("지금 새로고침", "Refresh now"), #selector(refreshNow))
+        item(L("자세히 보기", "Details"), #selector(toggleDetails), detailsOn)
         let tm = NSMenu()
-        item("계절 따라 (가을엔 할로윈)", #selector(pickTheme(_:)), themeId == "auto", "auto", in: tm)
+        item(L("계절 따라 (가을엔 할로윈)", "By season (Halloween in autumn)"), #selector(pickTheme(_:)), themeId == "auto", "auto", in: tm)
         tm.addItem(.separator())
         for t in themes { item(t.name, #selector(pickTheme(_:)), themeId == t.id, t.id, in: tm) }
-        let ti = NSMenuItem(title: "테마", action: nil, keyEquivalent: ""); ti.submenu = tm; m.addItem(ti)
+        let ti = NSMenuItem(title: L("테마", "Theme"), action: nil, keyEquivalent: ""); ti.submenu = tm; m.addItem(ti)
         let sm = NSMenu()
         for s in skins { item(s.name, #selector(pickSkin(_:)), skinId == s.id, s.id, in: sm) }
         sm.addItem(.separator())
-        item("내 스킨 폴더 열기", #selector(openSkinFolder), nil, nil, in: sm)
-        let si = NSMenuItem(title: "Clawd 스킨", action: nil, keyEquivalent: ""); si.submenu = sm; m.addItem(si)
-        item("하늘과 날씨", #selector(toggleSky), showSky)
-        item("바탕화면에 고정", #selector(togglePinned), pinned)
+        item(L("내 스킨 폴더 열기", "Open my skins folder"), #selector(openSkinFolder), nil, nil, in: sm)
+        let si = NSMenuItem(title: L("Clawd 스킨", "Clawd's skin"), action: nil, keyEquivalent: ""); si.submenu = sm; m.addItem(si)
+        item(L("하늘과 날씨", "Sky and weather"), #selector(toggleSky), showSky)
+        item(L("바탕화면에 고정", "Pin to desktop"), #selector(togglePinned), pinned)
         m.addItem(.separator())
-        item("한도 알림 (80% · 95% · 소진 · 리셋)", #selector(toggleAlerts), alertsOn)
-        item("로그인 시 자동 실행", #selector(toggleLogin), loginOn)
+        item(L("한도 알림 (80% · 95% · 소진 · 리셋)", "Limit alerts (80% · 95% · used up · reset)"), #selector(toggleAlerts), alertsOn)
+        item(L("로그인 시 자동 실행", "Start at login"), #selector(toggleLogin), loginOn)
+        let lm = NSMenu()
+        for (id, title) in [("auto", L("시스템 설정 따라", "System")), ("ko", "한국어"), ("en", "English")] {
+            item(title, #selector(pickLang(_:)), uiLang == id, id, in: lm)
+        }
+        let li = NSMenuItem(title: L("언어", "Language"), action: nil, keyEquivalent: ""); li.submenu = lm; m.addItem(li)
         m.addItem(.separator())
-        m.addItem(NSMenuItem(title: "종료", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
+        m.addItem(NSMenuItem(title: L("종료", "Quit"), action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q"))
         return m
     }
 
@@ -417,11 +425,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         if showSky { refreshWeather() }
         view.needsDisplay = true
     }
+    @objc func pickLang(_ s: NSMenuItem) {
+        uiLang = s.representedObject as? String ?? "auto"
+        defaults.set(uiLang, forKey: "lang")
+        updateStatusTitle()
+        view.needsDisplay = true
+    }
     @objc func toggleAlerts() {
         defaults.set(!alertsOn, forKey: "alerts")
         if alertsOn {
             UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { ok, _ in
-                if ok { DispatchQueue.main.async { self.notify("한도 알림을 켰어요", "세션·주간 한도가 80%, 95%를 넘거나 다 쓰면 알려 드릴게요.") } }
+                if ok { DispatchQueue.main.async { self.notify(L("한도 알림을 켰어요", "Limit alerts are on"), L("세션·주간 한도가 80%, 95%를 넘거나 다 쓰면 알려 드릴게요.", "You'll be told when the session or the week passes 80% and 95% or runs out.")) } }
             }
         }
     }
@@ -432,8 +446,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
             if svc.status == .enabled { try svc.unregister() } else { try svc.register() }
         } catch {
             let a = NSAlert()
-            a.messageText = "로그인 항목을 바꾸지 못했습니다"
-            a.informativeText = "\(error.localizedDescription)\n\n앱을 응용 프로그램 폴더에서 실행했는지 확인하세요."
+            a.messageText = L("로그인 항목을 바꾸지 못했습니다", "Couldn't change the login item")
+            a.informativeText = "\(error.localizedDescription)\n\n" + L("앱을 응용 프로그램 폴더에서 실행했는지 확인하세요.", "Make sure the app runs from an Applications folder.")
             a.runModal()
         }
         if svc.status == .requiresApproval { SMAppService.openSystemSettingsLoginItems() }
