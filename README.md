@@ -108,7 +108,11 @@ Weather comes from [Open-Meteo](https://open-meteo.com) (no key); the location i
 
 ## Themes and skins
 
-**Themes** (menu → Theme): Classic, Midnight, Mocha, OLED black, Forest and Halloween, with a wallpaper of tiny pumpkins, bats and ghosts. *By season* is Halloween in September–November and Classic the rest of the year.
+**Themes** (menu → Theme): Classic, Midnight, Mocha, OLED black, Forest, Halloween, with a wallpaper of tiny pumpkins, bats and ghosts, and **Space**: a purple starfield behind the whole widget, twinkling stars, drifting nebulae, two slowly turning pixel planets, a shooting star now and then and a little ship crossing the sky.
+
+![Space theme](docs/space.gif)
+
+ *By season* is Halloween in September–November and Classic the rest of the year.
 
 **Clawd's skins** (menu → Clawd's skin): his colours plus pixel accessories that move with him. A hat shows while his head is in the frame, and lying on his back he loses it.
 

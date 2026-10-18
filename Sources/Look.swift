@@ -1,4 +1,4 @@
-// Colour themes (lib/theme.ps1) and Clawd's skins (lib/skins.ps1).
+// Colour themes (lib/theme.ps1, plus Space - see Space.swift) and Clawd's skins (lib/skins.ps1).
 
 import AppKit
 
@@ -7,14 +7,15 @@ struct Theme {
     var name: String { L(nameKo, nameEn) }
     var bg: NSColor, card: NSColor, text: NSColor, text2: NSColor, muted: NSColor, dim: NSColor, faint: NSColor, off: NSColor, accent: NSColor
     var pattern = false
+    var space = false   // the animated starfield behind the whole widget
 }
 
-func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false) -> Theme {
+func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false, space: Bool = false) -> Theme {
     let base = ["bg": "#1A1A1E", "card": "#26262C", "text": "#E4E4E7", "text2": "#D4D4D8", "muted": "#8B8B94",
                 "dim": "#6B7280", "faint": "#52525B", "off": "#3F3F46", "accent": "#60A5FA"]
     func k(_ key: String) -> NSColor { hexColor(c[key] ?? base[key]!) }
     return Theme(id: id, nameKo: nameKo, nameEn: nameEn, bg: k("bg"), card: k("card"), text: k("text"), text2: k("text2"), muted: k("muted"),
-                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern)
+                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern, space: space)
 }
 
 let themes: [Theme] = [
@@ -28,6 +29,8 @@ let themes: [Theme] = [
                                     "dim": "#66786B", "faint": "#4B5B50", "off": "#35433A", "accent": "#5EEAD4"]),
     makeTheme("halloween", "할로윈", "Halloween", ["bg": "#1C1326", "card": "#2A1D38", "text": "#F5E6DA", "text2": "#E7D3C4", "muted": "#A08B9C",
                                      "dim": "#7E6A80", "faint": "#5B4A63", "off": "#3F3048", "accent": "#F97316"], pattern: true),
+    makeTheme("space", "우주", "Space", ["bg": "#0B0618", "card": "#1E1535", "text": "#EDE9FE", "text2": "#DDD6FE", "muted": "#A89BCB",
+                                      "dim": "#7C6F9E", "faint": "#5B4F80", "off": "#3B2F5C", "accent": "#C084FC"], space: true),
 ]
 
 // "auto" follows the season: Halloween in autumn, classic otherwise.
