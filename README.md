@@ -116,6 +116,10 @@ Weather comes from [Open-Meteo](https://open-meteo.com) (no key); the location i
 
 ![Launch theme](docs/launch.gif)
 
+**Hypercar**: an orange-to-red endurance prototype on show in a dark studio, drawn in detail: Hangul-like graphics in the livery, two-line headlights, shark fin and swan-neck wing, black multi-spoke wheels with orange calipers. A red glow burns behind it, light strips pulse on the wall, the glossy floor reflects it, a highlight sweeps along the bodywork and camera flashes go off now and then.
+
+![Hypercar theme](docs/hypercar.gif)
+
  *By season* is Halloween in September–November and Classic the rest of the year.
 
 **Clawd's skins** (menu → Clawd's skin): his colours plus pixel accessories that move with him. A hat shows while his head is in the frame, and lying on his back he loses it.
@@ -165,6 +169,7 @@ Sources/
   Look.swift    themes and skins
   Space.swift   the Space theme's starfield, planets and ship
   Launch.swift  the Launch theme's Moon base and rocket cycle
+  Hypercar.swift the Hypercar theme's studio and car
   Lang.swift    Korean / English
   Data.swift    /usage parsing, sessions, history, project scan, network
   Demo.swift    demo mode and frame recorder for the README images

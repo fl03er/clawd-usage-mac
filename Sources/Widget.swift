@@ -20,6 +20,7 @@ final class ClawdView: NSView {
     let sky = Sky()
     let space = Space()
     let launch = Launch()
+    let hypercar = Hypercar()
 
     // Layout.
     let pad = 16.0, heroTop = 36.0, heroH = 72.0
@@ -350,7 +351,7 @@ final class ClawdView: NSView {
         cf = f
         if let r = app?.recorder { display(); r.capture(self) }
         // Only the animated part when the details are steady.
-        // The Space and Launch themes animate the whole widget; otherwise only the top part moves.
+        // The Space, Launch and Hypercar themes animate the whole widget; otherwise only the top part moves.
         if window?.isVisible == true { theme.backdrop ? (needsDisplay = true) : setNeedsDisplay(CGRect(x: 0, y: 0, width: bounds.width, height: heroTop + heroH + 4)) }
     }
 
@@ -449,6 +450,9 @@ final class ClawdView: NSView {
         }
         if theme.launch {
             NSGraphicsContext.saveGraphicsState(); bg.setClip(); launch.draw(in: bounds, ground: ground, bg: theme.bg); NSGraphicsContext.restoreGraphicsState()
+        }
+        if theme.hypercar {
+            NSGraphicsContext.saveGraphicsState(); bg.setClip(); hypercar.draw(in: bounds, ground: ground, bg: theme.bg); NSGraphicsContext.restoreGraphicsState()
         }
         NSColor(white: 1, alpha: 0.08).setStroke()
         bg.stroke()

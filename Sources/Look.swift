@@ -1,4 +1,4 @@
-// Colour themes (lib/theme.ps1, plus Space and Launch - see Space.swift, Launch.swift) and Clawd's skins (lib/skins.ps1).
+// Colour themes (lib/theme.ps1, plus Space, Launch and Hypercar - see Space.swift, Launch.swift, Hypercar.swift) and Clawd's skins (lib/skins.ps1).
 
 import AppKit
 
@@ -9,15 +9,16 @@ struct Theme {
     var pattern = false
     var space = false   // the animated starfield behind the whole widget
     var launch = false  // the launch site on the Moon behind the whole widget
-    var backdrop: Bool { space || launch }
+    var hypercar = false    // the endurance prototype in a studio behind the whole widget
+    var backdrop: Bool { space || launch || hypercar }
 }
 
-func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false, space: Bool = false, launch: Bool = false) -> Theme {
+func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false, space: Bool = false, launch: Bool = false, hypercar: Bool = false) -> Theme {
     let base = ["bg": "#1A1A1E", "card": "#26262C", "text": "#E4E4E7", "text2": "#D4D4D8", "muted": "#8B8B94",
                 "dim": "#6B7280", "faint": "#52525B", "off": "#3F3F46", "accent": "#60A5FA"]
     func k(_ key: String) -> NSColor { hexColor(c[key] ?? base[key]!) }
     return Theme(id: id, nameKo: nameKo, nameEn: nameEn, bg: k("bg"), card: k("card"), text: k("text"), text2: k("text2"), muted: k("muted"),
-                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern, space: space, launch: launch)
+                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern, space: space, launch: launch, hypercar: hypercar)
 }
 
 let themes: [Theme] = [
@@ -35,6 +36,8 @@ let themes: [Theme] = [
                                       "dim": "#7C6F9E", "faint": "#5B4F80", "off": "#3B2F5C", "accent": "#C084FC"], space: true),
     makeTheme("launch", "발사", "Launch", ["bg": "#0C0C10", "card": "#1C1C22", "text": "#ECECF0", "text2": "#D6D6DC", "muted": "#9C9CA6",
                                        "dim": "#74747E", "faint": "#54545C", "off": "#33333A", "accent": "#FB923C"], launch: true),
+    makeTheme("hypercar", "하이퍼카", "Hypercar", ["bg": "#100707", "card": "#22110E", "text": "#FFF1E6", "text2": "#F1DCCD", "muted": "#C09C90",
+                                             "dim": "#8A6A60", "faint": "#5E4640", "off": "#3A2A26", "accent": "#FF7A1A"], hypercar: true),
 ]
 
 // "auto" follows the season: Halloween in autumn, classic otherwise.

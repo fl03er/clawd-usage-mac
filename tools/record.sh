@@ -42,17 +42,19 @@ gif weather 300 4 CLAWD_SKY_MINUTES=780 CLAWD_MOOD=idle CLAWD_WX=63
 gif space 470 6 CLAWD_THEME=space CLAWD_MOOD=idle CLAWD_SCRIPT="3:click=wink"
 # Launch theme: one whole 30-second cycle on the Moon.
 gif launch 300 30 CLAWD_THEME=launch CLAWD_MOOD=idle
+# Hypercar theme: the studio, the sweep along the bodywork and a flash or two.
+gif hypercar 300 8 CLAWD_THEME=hypercar CLAWD_MOOD=idle CLAWD_SCRIPT="3:click=wink"
 
 # The widget with details.
 shot $OUT/details.png CLAWD_SKY_MINUTES=780 CLAWD_DETAILS=1 CLAWD_MOOD=work
 
 # Themes.
 args=()
-for t in classic midnight mocha oled forest halloween space launch; do
+for t in classic midnight mocha oled forest halloween space launch hypercar; do
   shot $TMP/theme-$t.png CLAWD_SKY_MINUTES=1350 CLAWD_THEME=$t CLAWD_MOOD=idle CLAWD_SCRIPT="2.2:stop=1"
 done
-python3 tools/make_gif.py grid $OUT/themes.png 4 Classic=$TMP/theme-classic.png Midnight=$TMP/theme-midnight.png \
-  Mocha=$TMP/theme-mocha.png "OLED black=$TMP/theme-oled.png" Forest=$TMP/theme-forest.png Halloween=$TMP/theme-halloween.png Space=$TMP/theme-space.png Launch=$TMP/theme-launch.png
+python3 tools/make_gif.py grid $OUT/themes.png 3 Classic=$TMP/theme-classic.png Midnight=$TMP/theme-midnight.png \
+  Mocha=$TMP/theme-mocha.png "OLED black=$TMP/theme-oled.png" Forest=$TMP/theme-forest.png Halloween=$TMP/theme-halloween.png Space=$TMP/theme-space.png Launch=$TMP/theme-launch.png Hypercar=$TMP/theme-hypercar.png
 
 # Skins: Clawd standing still in the sky, cropped to the area he walks in.
 for s in classic bow crown ears frost nerd party santa shades tired tophat witch; do
