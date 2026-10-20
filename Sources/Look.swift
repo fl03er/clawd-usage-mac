@@ -1,4 +1,4 @@
-// Colour themes (lib/theme.ps1, plus Space - see Space.swift) and Clawd's skins (lib/skins.ps1).
+// Colour themes (lib/theme.ps1, plus Space and Launch - see Space.swift, Launch.swift) and Clawd's skins (lib/skins.ps1).
 
 import AppKit
 
@@ -8,14 +8,16 @@ struct Theme {
     var bg: NSColor, card: NSColor, text: NSColor, text2: NSColor, muted: NSColor, dim: NSColor, faint: NSColor, off: NSColor, accent: NSColor
     var pattern = false
     var space = false   // the animated starfield behind the whole widget
+    var launch = false  // the launch site on the Moon behind the whole widget
+    var backdrop: Bool { space || launch }
 }
 
-func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false, space: Bool = false) -> Theme {
+func makeTheme(_ id: String, _ nameKo: String, _ nameEn: String, _ c: [String: String], pattern: Bool = false, space: Bool = false, launch: Bool = false) -> Theme {
     let base = ["bg": "#1A1A1E", "card": "#26262C", "text": "#E4E4E7", "text2": "#D4D4D8", "muted": "#8B8B94",
                 "dim": "#6B7280", "faint": "#52525B", "off": "#3F3F46", "accent": "#60A5FA"]
     func k(_ key: String) -> NSColor { hexColor(c[key] ?? base[key]!) }
     return Theme(id: id, nameKo: nameKo, nameEn: nameEn, bg: k("bg"), card: k("card"), text: k("text"), text2: k("text2"), muted: k("muted"),
-                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern, space: space)
+                 dim: k("dim"), faint: k("faint"), off: k("off"), accent: k("accent"), pattern: pattern, space: space, launch: launch)
 }
 
 let themes: [Theme] = [
@@ -31,6 +33,8 @@ let themes: [Theme] = [
                                      "dim": "#7E6A80", "faint": "#5B4A63", "off": "#3F3048", "accent": "#F97316"], pattern: true),
     makeTheme("space", "우주", "Space", ["bg": "#0B0618", "card": "#1E1535", "text": "#EDE9FE", "text2": "#DDD6FE", "muted": "#A89BCB",
                                       "dim": "#7C6F9E", "faint": "#5B4F80", "off": "#3B2F5C", "accent": "#C084FC"], space: true),
+    makeTheme("launch", "발사", "Launch", ["bg": "#0C0C10", "card": "#1C1C22", "text": "#ECECF0", "text2": "#D6D6DC", "muted": "#9C9CA6",
+                                       "dim": "#74747E", "faint": "#54545C", "off": "#33333A", "accent": "#FB923C"], launch: true),
 ]
 
 // "auto" follows the season: Halloween in autumn, classic otherwise.

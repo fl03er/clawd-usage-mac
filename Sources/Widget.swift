@@ -19,6 +19,7 @@ final class ClawdView: NSView {
     var skin = Skin(id: "classic", fileName: "Classic")
     let sky = Sky()
     let space = Space()
+    let launch = Launch()
 
     // Layout.
     let pad = 16.0, heroTop = 36.0, heroH = 72.0
@@ -349,8 +350,8 @@ final class ClawdView: NSView {
         cf = f
         if let r = app?.recorder { display(); r.capture(self) }
         // Only the animated part when the details are steady.
-        // The Space theme animates the whole widget; otherwise only the top part moves.
-        if window?.isVisible == true { theme.space ? (needsDisplay = true) : setNeedsDisplay(CGRect(x: 0, y: 0, width: bounds.width, height: heroTop + heroH + 4)) }
+        // The Space and Launch themes animate the whole widget; otherwise only the top part moves.
+        if window?.isVisible == true { theme.backdrop ? (needsDisplay = true) : setNeedsDisplay(CGRect(x: 0, y: 0, width: bounds.width, height: heroTop + heroH + 4)) }
     }
 
     // MARK: input
@@ -446,6 +447,9 @@ final class ClawdView: NSView {
         if theme.space {
             NSGraphicsContext.saveGraphicsState(); bg.setClip(); space.draw(in: bounds, sky: hero); NSGraphicsContext.restoreGraphicsState()
         }
+        if theme.launch {
+            NSGraphicsContext.saveGraphicsState(); bg.setClip(); launch.draw(in: bounds, ground: ground, bg: theme.bg); NSGraphicsContext.restoreGraphicsState()
+        }
         NSColor(white: 1, alpha: 0.08).setStroke()
         bg.stroke()
 
@@ -476,7 +480,7 @@ final class ClawdView: NSView {
         // Hero: sky, big session percent, Clawd.
         NSGraphicsContext.saveGraphicsState()
         NSBezierPath(roundedRect: hero, xRadius: 8, yRadius: 8).setClip()
-        if app.showSky && !theme.space { sky.draw(in: hero, weather: app.weather, place: app.place) }
+        if app.showSky && !theme.backdrop { sky.draw(in: hero, weather: app.weather, place: app.place) }
         NSGraphicsContext.restoreGraphicsState()
 
         let u = app.usage

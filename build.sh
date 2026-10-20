@@ -5,7 +5,7 @@
 #   ./build.sh release   universal build (Apple Silicon + Intel) zipped into dist/
 set -e
 cd "$(dirname "$0")"
-VERSION=0.4.0
+VERSION=0.5.0
 APP=ClawdUsage.app
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/skins"

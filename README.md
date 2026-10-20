@@ -112,6 +112,10 @@ Weather comes from [Open-Meteo](https://open-meteo.com) (no key); the location i
 
 ![Space theme](docs/space.gif)
 
+**Launch**: a launch site on the Moon, with Earth hanging in a black sky, on a 30-second loop. A three-core rocket rolls out of the base lying on its transporter, is raised on the pad, vents, lights up and climbs out of the top of the widget; the blast throws regolith out on low arcs that settle again before the next one rolls out. Drawn in 1-point pixels with ordered dithering.
+
+![Launch theme](docs/launch.gif)
+
  *By season* is Halloween in September–November and Classic the rest of the year.
 
 **Clawd's skins** (menu → Clawd's skin): his colours plus pixel accessories that move with him. A hat shows while his head is in the frame, and lying on his back he loses it.
@@ -159,6 +163,8 @@ Sources/
   Sprite.swift  Clawd's glyphs, poses and the Claude Code animation sequences
   Sky.swift     sky, sun, moon phase, clouds, rain, snow, fog, lightning
   Look.swift    themes and skins
+  Space.swift   the Space theme's starfield, planets and ship
+  Launch.swift  the Launch theme's Moon base and rocket cycle
   Lang.swift    Korean / English
   Data.swift    /usage parsing, sessions, history, project scan, network
   Demo.swift    demo mode and frame recorder for the README images
