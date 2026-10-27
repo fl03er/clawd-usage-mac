@@ -324,7 +324,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         statusItem.button?.title = " \(s.pct)%" + (s.reset.map { " \(clock($0))" } ?? "")
     }
 
-    // The menu bar crab mirrors the widget's current frame, in the current skin.
+    // The menu bar crab mirrors the widget's current frame, in the current skin - except while a session
+    // works: then he sits at a keyboard and types (see ClawdView.step).
     func updateStatusIcon(_ f: Frame) {
         var f = f
         f.x = 0; f.lift = 0
@@ -333,14 +334,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         let g = buildGeo(f)
         let sk = skin()
         let acc = accessoryRects(sk, f)
-        let img = NSImage(size: NSSize(width: 20, height: 18), flipped: true) { _ in
-            let oy = 3.5
+        let k = 1.2   // menu bar size relative to the original 20x18 icon
+        let img = NSImage(size: NSSize(width: 2 + 18 * k, height: 18 * k), flipped: true) { _ in
+            let oy = 3.5 * k
             func fill(_ rects: [CGRect]) {
-                for r in rects { NSBezierPath(rect: CGRect(x: 1 + r.minX, y: oy + r.minY * 1.1, width: r.width, height: r.height * 1.1)).fill() }
+                for r in rects { NSBezierPath(rect: CGRect(x: 1 + r.minX * k, y: oy + r.minY * 1.1 * k, width: r.width * k, height: r.height * 1.1 * k)).fill() }
             }
             hexColor("#C29E66").setFill(); fill(g.sand)
             sk.body.setFill(); fill(g.body)
             sk.eyes.setFill(); fill(g.eyes)
+            hexColor("#37474F").setFill(); fill(g.kbd)
+            hexColor("#90A4AE").setFill(); fill(g.keys)
+            hexColor("#ECEFF1").setFill(); fill(g.lit)
             for (c, rects) in acc { c.setFill(); fill(rects) }
             return true
         }
@@ -357,7 +362,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, UNUserNotificationCent
         updateStatusIconIfReady()
         view.needsDisplay = true
     }
-    func updateStatusIconIfReady() { if statusItem != nil { updateStatusIcon(view.cf) } }
+    func updateStatusIconIfReady() { if statusItem != nil { updateStatusIcon(view.icf) } }
 
     func buildMenu() -> NSMenu {
         let m = NSMenu()

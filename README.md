@@ -57,7 +57,7 @@ Pick your Claude account (subscription), approve in the browser, and the numbers
 
 ## What it shows
 
-**Menu bar**: Clawd, animated like in the widget and wearing his skin, plus the session percentage and its reset time. Left-click drops the widget down, right-click opens the menu.
+**Menu bar**: Clawd, animated like in the widget and wearing his skin, plus the session percentage and its reset time. While a session is working he sits at a keyboard and types instead (arms taking turns, a key lighting up, a glance at the screen now and then; borrowed from [clawd-on-desk](https://github.com/rullerzhou-afk/clawd-on-desk)'s "working"). Left-click drops the widget down, right-click opens the menu.
 
 **Big number**: the current session (the 5-hour window), straight from the server. The bar goes green → yellow (60%) → red (85%). Under it, the time until the window resets.
 

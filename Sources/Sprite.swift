@@ -44,8 +44,9 @@ struct Frame {
     var look = 0, flip = false, lift = 0.0, off = 0, x = 0
     var facing = "", poof = "", shadow = ""
     var dig = 0, spray = 0
+    var kb = -1   // typing: a keyboard over his feet with this key lit (-1 - no keyboard)
     var soul = 0.0, soulT = 0   // soul height above the mouth (not part of the geometry key)
-    var key: String { "\(eyes)|\(arms)|\(feet)|\(look)|\(flip)|\(off)|\(x)|\(facing)|\(poof)|\(shadow)|\(dig)|\(spray)" }
+    var key: String { "\(eyes)|\(arms)|\(feet)|\(look)|\(flip)|\(off)|\(x)|\(facing)|\(poof)|\(shadow)|\(dig)|\(spray)|\(kb)" }
 }
 
 let poses = ["default": "open/down/both", "arms-up": "open/up/both",
@@ -105,13 +106,34 @@ let clawdSeqs: [String: [Frame]] = {
             F("arms-up", shadow: "wide") + cr + bo,
     ]
 }()
+// The keyboard he types on while a session works (clawd-on-desk's "working"): 13 keys in two staggered rows,
+// the space bar among them. Indices 0-3 and 8-9 are on his left, 4-7 and 11-12 on his right.
+let kbdKeys: [CGRect] = [1, 3, 5, 7, 10, 12, 14, 16].map { CGRect(x: $0, y: 9, width: 1, height: 1) }
+    + [(2, 1), (4, 1), (6, 6), (13, 1), (15, 1)].map { CGRect(x: $0.0, y: 10, width: $0.1, height: 1) }
+
+// He types, the arms taking turns: the one that is down presses a key on its side. His eyes stay on the keys,
+// with a glance up at the screen now and then.
+func typingFrame(_ tick: Int, every: Int = 2) -> Frame {
+    let k = tick / every, n = k / 2 % 8
+    var f = Frame()
+    f.arms = k % 2 == 0 ? "right" : "left"   // "right" has the left arm down
+    f.kb = k % 2 == 0 ? [2, 0, 3, 9, 1, 8, 3, 0][n] : [5, 7, 4, 12, 6, 11, 4, 7][n]
+    switch tick % 110 {
+    case 14 ... 15, 38 ... 39, 57 ... 58: f.eyes = "blink"
+    case 62 ... 64, 68 ... 69: f.eyes = "left"
+    case 65 ... 67, 70 ... 72: f.eyes = "right"
+    default: f.eyes = "focus"
+    }
+    return f
+}
+
 let customActLen = ["wave": 24, "stretch": 22, "yawn": 22, "stumble": 20, "burrow": 30, "unburrow": 28, "stir": 22, "soul": 66]
 // On click: everything that starts in place (no slide-in), as in Claude Code.
 let clickActs = clawdSeqs.keys.filter { clawdSeqs[$0]![0].x == 0 && $0 != "celebrate" }.sorted()
 let burrowDig = 4
 
 // Pixel rectangles in grid units (x in pixel columns, y in pixel rows).
-struct Geo { var body: [CGRect] = [], eyes: [CGRect] = [], fx: [CGRect] = [], sand: [CGRect] = [] }
+struct Geo { var body: [CGRect] = [], eyes: [CGRect] = [], fx: [CGRect] = [], sand: [CGRect] = [], kbd: [CGRect] = [], keys: [CGRect] = [], lit: [CGRect] = [] }
 
 func buildGeo(_ f: Frame) -> Geo {
     let W = gridW, H = gridH
@@ -207,6 +229,12 @@ func buildGeo(_ f: Frame) -> Geo {
             geo.sand.append(CGRect(x: -sx, y: sy, width: 0.8, height: 0.8))
             geo.sand.append(CGRect(x: Wd - 0.8 + sx, y: sy, width: 0.8, height: 0.8))
         }
+    }
+    // Typing: the keyboard covers his feet, the pressed key is lit.
+    if f.kb >= 0 {
+        geo.kbd.append(CGRect(x: 0, y: Hd - 4, width: Wd, height: 4))
+        geo.keys = kbdKeys
+        geo.lit = [kbdKeys[f.kb % kbdKeys.count]]
     }
     return geo
 }

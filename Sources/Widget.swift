@@ -19,6 +19,7 @@ final class ClawdView: NSView {
     var skin = Skin(id: "classic", fileName: "Classic")
     let sky = Sky()
     let space = Space()
+    let blackHole = BlackHole()
     let launch = Launch()
     let hypercar = Hypercar()
 
@@ -47,7 +48,8 @@ final class ClawdView: NSView {
     var loveT = -1, noteT = -1, confT = -1
     var busyN = -1, waitingN = 0, lastReset: Date? = nil, lastPct: Int? = nil
     var buried = false
-    var cf = Frame(), bubble = "", zzz = false, dust = false, sweat = false, stagger = false
+    var cf = Frame(), icf = Frame()   // icf: the frame in the menu bar, which is not always the widget's
+    var bubble = "", zzz = false, dust = false, sweat = false, stagger = false
     var confetti: [(x: Double, y: Double, v: Double, d: Double, c: NSColor)] = []
     var geoCache: [String: Geo] = [:]
     var timer: Timer?
@@ -347,11 +349,18 @@ final class ClawdView: NSView {
         }
         if loveT >= 0 { loveT += 1; if loveT >= 20 { loveT = -1 } }
 
-        if cf.key != f.key { app?.updateStatusIcon(f) }
+        // In the menu bar he types while a session works (the widget keeps running to the ends); other times he mirrors the widget.
+        var icon = f
+        if md == "work" && act == nil {
+            icon = typingFrame(tick, every: tier.speed < 0.8 ? 3 : 2)
+            if !tier.eyes.isEmpty && icon.eyes == "focus" { icon.eyes = tier.eyes }
+        }
+        if icf.key != icon.key { app?.updateStatusIcon(icon) }
+        icf = icon
         cf = f
         if let r = app?.recorder { display(); r.capture(self) }
         // Only the animated part when the details are steady.
-        // The Space, Launch and Hypercar themes animate the whole widget; otherwise only the top part moves.
+        // The animated themes (Space, Black hole, Launch, Hypercar) animate the whole widget; otherwise only the top part moves.
         if window?.isVisible == true { theme.backdrop ? (needsDisplay = true) : setNeedsDisplay(CGRect(x: 0, y: 0, width: bounds.width, height: heroTop + heroH + 4)) }
     }
 
@@ -447,6 +456,9 @@ final class ClawdView: NSView {
         }
         if theme.space {
             NSGraphicsContext.saveGraphicsState(); bg.setClip(); space.draw(in: bounds, sky: hero); NSGraphicsContext.restoreGraphicsState()
+        }
+        if theme.blackHole {
+            NSGraphicsContext.saveGraphicsState(); bg.setClip(); blackHole.draw(in: bounds, hero: hero); NSGraphicsContext.restoreGraphicsState()
         }
         if theme.launch {
             NSGraphicsContext.saveGraphicsState(); bg.setClip(); launch.draw(in: bounds, ground: ground, bg: theme.bg); NSGraphicsContext.restoreGraphicsState()
